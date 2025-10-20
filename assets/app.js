@@ -1,5 +1,5 @@
 import { clear, el, setActiveTab } from './ui.js';
-import { state, getRooms, getAnchors, getShifts, updateShifts, clearAllShifts } from './state.js';
+import { getRooms, getAnchors, getShifts, updateShifts, clearAllShifts, checkShiftConflicts } from './state.js';
 import { renderScheduleGrid, getWeekStart } from './schedule.js';
 
 let selectedAnchorId = null;
@@ -31,20 +31,20 @@ function buildEventsForWeek(weekStartDate, { onlyAnchorId = null } = {}) {
   const weekDates = Array.from({ length: 7 }, (_, i) => { const d = new Date(weekStart); d.setDate(weekStart.getDate() + i); return toDateString(d); });
   const events = [];
   for (const s of getShifts()) {
-    if (onlyAnchorId && !Array.isArray(s.anchorIds) ? true : (onlyAnchorId && !s.anchorIds.includes(onlyAnchorId))) continue;
+    if (onlyAnchorId && (!Array.isArray(s.anchorIds) || !s.anchorIds.includes(onlyAnchorId))) continue;
     if (!weekDates.includes(s.date)) continue;
-    const labelParts = [];
-    if (Array.isArray(s.anchorIds)) {
-      const anchorNames = getAnchors().filter(a => s.anchorIds.includes(a.id)).map(a => a.name);
-      if (anchorNames.length) labelParts.push(anchorNames.join('、'));
-    }
-    if (s.note) labelParts.push(s.note);
+    const anchorNames = Array.isArray(s.anchorIds) ? getAnchors().filter(a => s.anchorIds.includes(a.id)).map(a => a.name) : [];
+    const combinedLabel = s.note ? `${anchorNames.join('、')}${anchorNames.length ? ' | ' : ''}${s.note}` : anchorNames.join('、');
     events.push({
+      id: s.id,
       date: s.date,
       start: s.start,
       end: s.end,
+      roomId: s.roomId,
       roomLabel: roomMap.get(s.roomId) || `直播间#${s.roomId}`,
-      label: labelParts.join(' | '),
+      label: combinedLabel,
+      note: s.note || '',
+      anchorIds: Array.isArray(s.anchorIds) ? [...s.anchorIds] : [],
     });
   }
   return events;
@@ -79,6 +79,10 @@ function renderManageView() {
     const { h: eh, m: em } = parseTimeStr(end);
     if (eh < sh || (eh === sh && em <= sm)) { alert('结束时间必须晚于开始时间'); return; }
 
+    const proposed = { id: null, date, start, end, roomId, note, anchorIds };
+    const chk = checkShiftConflicts(proposed, null);
+    if (!chk.ok) { alert(chk.message); return; }
+
     updateShifts(prev => [
       ...prev,
       { id: makeId(), date, start, end, roomId, note, anchorIds }
@@ -105,7 +109,7 @@ function renderManageView() {
 
   // 网格 + 叠加所有主播的本周排班
   const events = buildEventsForWeek(weekStart);
-  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events }));
+  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events, interactive: true, onChange: () => renderApp() }));
   return section;
 }
 
@@ -136,7 +140,7 @@ function renderMineView() {
 
   // 仅叠加所选主播的当周排班（跨房间合并展示）
   const events = buildEventsForWeek(weekStart, { onlyAnchorId: selectedAnchorId });
-  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events }));
+  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events, interactive: false }));
   return section;
 }
 

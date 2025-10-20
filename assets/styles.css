@@ -189,7 +189,10 @@ body {
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: 12px;
+  position: relative;
+  cursor: grab;
 }
+.event-block.dragging { cursor: grabbing; outline: 2px dashed rgba(14,165,233,0.6); opacity: 0.95; }
 .event-block .event-room {
   font-weight: 600;
   color: #0369a1;
@@ -199,6 +202,36 @@ body {
 }
 .event-block .event-label {
   color: #475569;
+}
+.event-handle {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 6px;
+  background: rgba(14, 165, 233, 0.15);
+  cursor: ew-resize;
+}
+.event-handle.left { left: -2px; border-left: 2px solid #06b6d4; border-radius: 6px 0 0 6px; }
+.event-handle.right { right: -2px; border-right: 2px solid #06b6d4; border-radius: 0 6px 6px 0; }
+.event-del {
+  position: absolute;
+  top: 2px; right: 4px;
+  width: 18px; height: 18px;
+  border: none; background: transparent; color: #ef4444; font-size: 14px; line-height: 18px; border-radius: 4px; cursor: pointer;
+}
+.event-del:hover { background: rgba(239, 68, 68, 0.1); }
+
+/* 自定义 tooltip（备注） */
+.tooltip-floating {
+  position: fixed;
+  z-index: 50;
+  max-width: 280px;
+  background: rgba(17,17,17,0.95);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
 }
 
 /***** 顶部工具栏 *****/
@@ -241,6 +274,24 @@ body {
 .manage-form .actions { display: flex; align-items: end; }
 .manage-form button { height: 32px; border-radius: 8px; border: 1px solid var(--border); padding: 0 12px; }
 .manage-form button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/***** 编辑弹窗 *****/
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 60;
+}
+.modal {
+  width: 520px; max-width: 92vw; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+.modal-title { font-weight: 600; margin-bottom: 8px; }
+.modal .field { display: flex; flex-direction: column; margin: 8px 0; }
+.modal label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.modal input, .modal select, .modal textarea { border: 1px solid var(--border); border-radius: 8px; height: 32px; padding: 0 8px; }
+.modal textarea { min-height: 56px; height: auto; padding-top: 6px; }
+.modal-actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.modal-actions .spacer { flex: 1; }
+.modal-actions button { height: 32px; border-radius: 8px; border: 1px solid var(--border); padding: 0 12px; cursor: pointer; }
+.modal-actions button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.modal-actions button.danger { background: #ef4444; color: #fff; border-color: #ef4444; }
 
 /* 小屏体验 */
 @media (max-width: 600px) {
