@@ -1,6 +1,7 @@
 // 数据模型与本地存储
 
-const STORAGE_KEY = 'schedule-demo-state';
+// 使用指定的持久化 key（验收示例：schedule_demo_v1）
+const STORAGE_KEY = 'schedule_demo_v1';
 
 const defaultRooms = [
   { id: 1, name: '1号直播间' },
@@ -52,6 +53,11 @@ export const state = loadState();
 export function updateShifts(updater) {
   const next = typeof updater === 'function' ? updater(state.shifts) : updater;
   state.shifts = Array.isArray(next) ? next : state.shifts;
+  saveState(state);
+}
+
+export function clearAllShifts() {
+  state.shifts = [];
   saveState(state);
 }
 
