@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>排班管理</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1>排班管理</h1>
+      <div class="room-switch" id="room-switch">
+        <!-- 动态渲染直播间切换按钮 -->
+      </div>
+    </header>
+
+    <main>
+      <section class="grid-section">
+        <div class="grid-header" id="grid-header">
+          <!-- 顶部时间刻度 -->
+        </div>
+        <div class="week-grid" id="week-grid">
+          <!-- 动态渲染周网格 -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="shift-modal" class="modal">
+    <form method="dialog" id="shift-form" class="modal-content">
+      <h3 id="modal-title">创建排班</h3>
+      <div class="field">
+        <label>直播间：</label>
+        <span id="modal-room-label"></span>
+      </div>
+      <div class="field">
+        <label>时间：</label>
+        <span id="modal-time-label"></span>
+      </div>
+      <div class="field">
+        <label for="anchor-search">选择主播：</label>
+        <input id="anchor-search" type="text" placeholder="搜索主播" />
+        <div class="anchor-list" id="anchor-list">
+          <!-- 动态渲染主播多选 -->
+        </div>
+      </div>
+      <div class="field">
+        <label for="note">备注：</label>
+        <textarea id="note" rows="3" placeholder="可选"></textarea>
+      </div>
+      <menu class="actions">
+        <button type="reset" id="btn-cancel">取消</button>
+        <button type="button" id="btn-delete" class="danger hidden">删除</button>
+        <button type="submit" id="btn-save" class="primary">保存</button>
+      </menu>
+      <input type="hidden" id="edit-shift-id" />
+    </form>
+  </dialog>
+
+  <script src="./state.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

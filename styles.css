@@ -1,0 +1,58 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; color: #1f2937; }
+
+.page { padding: 16px; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.header h1 { font-size: 20px; margin: 0; }
+.room-switch { display: flex; gap: 8px; }
+.room-btn { padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; cursor: pointer; }
+.room-btn.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+
+.grid-section { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+.grid-header { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: 120px 1fr; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+.time-scale { position: relative; display: grid; grid-template-columns: repeat(48, minmax(16px, 1fr)); }
+.time-scale .hour { position: relative; grid-column: span 2; font-size: 12px; color: #6b7280; padding: 6px 0; text-align: left; }
+.time-scale .hour::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: #e5e7eb; }
+
+.week-grid { position: relative; }
+.row { position: relative; display: grid; grid-template-columns: 120px 1fr; min-height: 40px; border-bottom: 1px solid #f3f4f6; }
+.row:last-child { border-bottom: none; }
+.row .day-label { display: flex; align-items: center; justify-content: flex-start; padding: 8px; font-weight: 500; background: #fafafa; border-right: 1px solid #f3f4f6; }
+.row .slots { position: relative; display: grid; grid-template-columns: repeat(48, minmax(16px, 1fr)); cursor: crosshair; }
+.row .slots .cell { position: relative; height: 40px; border-right: 1px solid #f9fafb; }
+.row .slots .cell:nth-child(2n) { border-right-color: #f3f4f6; }
+.row .slots .cell::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: #f3f4f6; }
+.row .slots .cell:nth-child(2n)::after { background: #e5e7eb; }
+
+/* Selection highlight */
+.selection { position: absolute; top: 4px; bottom: 4px; background: rgba(37, 99, 235, 0.15); border: 1px dashed #2563eb; pointer-events: none; border-radius: 4px; }
+
+/* Shift block */
+.shift-block { position: absolute; top: 4px; bottom: 4px; background: #dbeafe; border: 1px solid #93c5fd; color: #1e3a8a; border-radius: 6px; padding: 4px 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; cursor: pointer; display: flex; align-items: center; }
+.shift-block:hover { background: #bfdbfe; }
+
+/* Modal */
+.modal { width: min(640px, calc(100% - 32px)); border: none; border-radius: 10px; padding: 0; }
+.modal::backdrop { background: rgba(0,0,0,0.35); }
+.modal-content { padding: 16px; }
+.modal-content h3 { margin: 0 0 12px; font-size: 18px; }
+.field { margin: 10px 0; display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: start; }
+.field label { color: #374151; font-size: 14px; padding-top: 6px; }
+.field input[type="text"], .field textarea { width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font: inherit; }
+.anchor-list { max-height: 220px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; }
+.anchor-item { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.actions button { padding: 8px 14px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+.actions .primary { background: #2563eb; color: white; border-color: #2563eb; }
+.actions .danger { background: #ef4444; color: white; border-color: #ef4444; }
+.hidden { display: none !important; }
+
+/* Tooltip via title attribute is native */
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .field { grid-template-columns: 1fr; }
+  .grid-header { grid-template-columns: 80px 1fr; }
+  .row { grid-template-columns: 80px 1fr; }
+}
