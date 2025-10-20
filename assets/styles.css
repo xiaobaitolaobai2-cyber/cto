@@ -172,8 +172,79 @@ body {
 }
 .grid-cell:hover { background: var(--hover); }
 
+/***** 事件块（排班） *****/
+.event-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: calc(var(--row-height) - 8px);
+  margin: 4px 0;
+  padding: 2px 8px;
+  background: #ecfeff;           /* 青色浅底 */
+  border: 1px solid #06b6d4;      /* 青色边 */
+  color: #0f172a;                 /* 深色文字 */
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgba(2, 132, 199, 0.15);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+.event-block .event-room {
+  font-weight: 600;
+  color: #0369a1;
+}
+.event-block .event-time {
+  color: #334155;
+}
+.event-block .event-label {
+  color: #475569;
+}
+
+/***** 顶部工具栏 *****/
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.toolbar .left, .toolbar .right { display: flex; gap: 8px; align-items: center; }
+.toolbar select, .toolbar input, .toolbar button {
+  height: 32px;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+.toolbar button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.toolbar button.danger { background: #ef4444; color: #fff; border-color: #ef4444; }
+.toolbar .muted { color: var(--muted); font-size: 13px; }
+
+/***** 管理页表单 *****/
+.manage-form {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.manage-form label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+.manage-form .field { display: flex; flex-direction: column; }
+.manage-form input, .manage-form select, .manage-form textarea {
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 8px;
+}
+.manage-form textarea { height: 32px; resize: vertical; min-height: 32px; padding-top: 6px; }
+.manage-form .actions { display: flex; align-items: end; }
+.manage-form button { height: 32px; border-radius: 8px; border: 1px solid var(--border); padding: 0 12px; }
+.manage-form button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+
 /* 小屏体验 */
 @media (max-width: 600px) {
   :root { --slot-width: 56px; --gutter-width: 88px; }
   .brand { font-size: 15px; }
+  .manage-form { grid-template-columns: 1fr 1fr; }
 }
