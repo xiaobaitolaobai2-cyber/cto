@@ -11,6 +11,7 @@ function currentRoute() {
 
 function toDateString(d) { const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
 function parseTimeStr(t) { const [h,m] = t.split(':').map(Number); return { h, m }; }
+function timeStrToIdx(t) { const { h, m } = parseTimeStr(t); return h * 2 + (m >= 30 ? 1 : 0); }
 
 function getISOWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -105,7 +106,119 @@ function renderManageView() {
 
   // 网格 + 叠加所有主播的本周排班
   const events = buildEventsForWeek(weekStart);
-  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events }));
+
+  // 框选命中已排班的快捷操作
+  function showQuickActions({ x, y, shift }) {
+    // 关闭既有
+    document.querySelectorAll('.quick-popover').forEach(n => n.remove());
+
+    const anchors = getAnchors();
+    const rooms = getRooms();
+    const anchorMap = new Map(anchors.map(a => [a.id, a.name]));
+    const roomMap = new Map(rooms.map(r => [r.id, r.name]));
+
+    const pop = document.createElement('div');
+    pop.className = 'quick-popover';
+    pop.style.left = `${Math.min(Math.max(8, x), window.innerWidth - 260)}px`;
+    pop.style.top = `${Math.min(Math.max(8, y), window.innerHeight - 160)}px`;
+
+    function renderMain() {
+      pop.innerHTML = '';
+      pop.appendChild(el('div', { class: 'title' }, `已排班 ${shift.start}-${shift.end}`));
+      pop.appendChild(el('div', { class: 'muted' }, `${roomMap.get(shift.roomId) || '直播间'} · 主播：${(shift.anchorIds || []).map(id => anchorMap.get(id)).join('、') || '未设置'}`));
+      const btns = el('div', { class: 'actions' },
+        el('button', { class: 'primary', onclick: () => renderReplace() }, '更换主播'),
+        el('button', { class: 'danger', onclick: () => doDelete() }, '取消排班'),
+        el('button', { onclick: () => pop.remove() }, '关闭'),
+      );
+      pop.appendChild(btns);
+    }
+
+    function doDelete() {
+      if (!confirm('确定取消该排班？')) return;
+      updateShifts(prev => prev.filter(s => s.id !== shift.id));
+      pop.remove();
+      renderApp();
+    }
+
+    function renderReplace() {
+      pop.innerHTML = '';
+      pop.appendChild(el('div', { class: 'title' }, '更换主播'));
+      const multi = el('select', { multiple: true, style: 'width:100%;' }, anchors.map(a => el('option', { value: a.id, selected: shift.anchorIds?.includes(a.id) }, a.name)));
+      pop.appendChild(el('div', { class: 'field' }, el('label', { class: 'muted' }, '主播（可多选）'), multi));
+
+      const btns = el('div', { class: 'actions' },
+        el('button', { onclick: () => renderMain() }, '返回'),
+        el('button', { class: 'primary', onclick: () => doSave(multi) }, '保存')
+      );
+      pop.appendChild(btns);
+    }
+
+    function doSave(multi) {
+      const nextIds = Array.from(multi.selectedOptions).map(o => o.value);
+      if (!nextIds.length) { alert('请至少保留一位主播'); return; }
+      // 冲突校验：同一主播同一时间不可在其他房间有排班
+      const all = getShifts();
+      const conflicts = [];
+      const sStart = timeStrToIdx(shift.start);
+      const sEnd = timeStrToIdx(shift.end);
+      for (const sid of nextIds) {
+        for (const s of all) {
+          if (s.id === shift.id) continue; // 排除自身
+          if (s.date !== shift.date) continue;
+          if (s.roomId === shift.roomId) continue; // 其他房间
+          if (!Array.isArray(s.anchorIds) || !s.anchorIds.includes(sid)) continue;
+          const oStart = timeStrToIdx(s.start);
+          const oEnd = timeStrToIdx(s.end);
+          const overlap = sStart < oEnd && oStart < sEnd;
+          if (overlap) {
+            conflicts.push({ anchorId: sid, other: s });
+          }
+        }
+      }
+      if (conflicts.length) {
+        const rooms = getRooms();
+        const roomMap = new Map(rooms.map(r => [r.id, r.name]));
+        const anchors = getAnchors();
+        const anchorMap = new Map(anchors.map(a => [a.id, a.name]));
+        const lines = conflicts.slice(0, 3).map(c => {
+          const aName = anchorMap.get(c.anchorId) || c.anchorId;
+          const rName = roomMap.get(c.other.roomId) || c.other.roomId;
+          return `${aName} 在 ${c.other.date} ${c.other.start}-${c.other.end} 已排 ${rName}`;
+        });
+        alert('存在时间冲突：\n' + lines.join('\n'));
+        return;
+      }
+
+      updateShifts(prev => prev.map(s => s.id === shift.id ? { ...s, anchorIds: nextIds } : s));
+      pop.remove();
+      renderApp();
+    }
+
+    document.body.appendChild(pop);
+    renderMain();
+  }
+
+  function onSelectRange({ dayIndex, startIdx, endIdx, clientX, clientY }) {
+    const curRoomId = Number(form.querySelector('#mf-room').value);
+    const date = toDateString(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + dayIndex));
+
+    const sHit = getShifts().find(s => {
+      if (s.date !== date) return false;
+      if (s.roomId !== curRoomId) return false;
+      const sStart = timeStrToIdx(s.start);
+      const sEnd = timeStrToIdx(s.end);
+      const overlap = sStart < endIdx && startIdx < sEnd;
+      return overlap;
+    });
+
+    if (sHit) {
+      // 对齐到该块的起止（逻辑层面）并弹出快捷操作
+      showQuickActions({ x: clientX, y: clientY, shift: sHit });
+    }
+  }
+
+  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events, onSelectRange }));
   return section;
 }
 
