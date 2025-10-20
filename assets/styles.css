@@ -248,3 +248,32 @@ body {
   .brand { font-size: 15px; }
   .manage-form { grid-template-columns: 1fr 1fr; }
 }
+
+/* 框选高亮 */
+.grid-body { position: relative; }
+.selection-overlay {
+  border: 2px dashed rgba(10, 132, 255, 0.6);
+  background: rgba(10, 132, 255, 0.08);
+  border-radius: 6px;
+}
+
+/* 快捷操作弹窗 */
+.quick-popover {
+  position: fixed;
+  z-index: 50;
+  min-width: 240px;
+  max-width: 320px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  padding: 12px;
+}
+.quick-popover .title { font-weight: 600; margin-bottom: 8px; }
+.quick-popover .muted { color: var(--muted); font-size: 12px; }
+.quick-popover .actions { display: flex; gap: 8px; margin-top: 8px; }
+.quick-popover button { height: 28px; border-radius: 8px; border: 1px solid var(--border); padding: 0 10px; }
+.quick-popover button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.quick-popover button.danger { background: #ef4444; border-color: #ef4444; color: #fff; }
+.quick-popover .field { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.quick-popover select[multiple] { min-height: 120px; border-radius: 8px; border: 1px solid var(--border); padding: 6px; }

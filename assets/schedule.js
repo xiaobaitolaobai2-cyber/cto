@@ -42,9 +42,92 @@ function renderEvents(grid, opts) {
   }
 }
 
+function attachRangeSelection({ grid, bodyScroll, onSelectRange }) {
+  let selecting = false;
+  let startCol = 0;
+  let curCol = 0;
+  let row = 0;
+  let overlay = null;
+
+  function getMetrics() {
+    const rect = grid.getBoundingClientRect();
+    const colWidth = rect.width / 48;
+    const rowHeight = rect.height / 7;
+    return { rect, colWidth, rowHeight };
+  }
+
+  function toCol(clientX, rect, colWidth) {
+    const x = clientX - rect.left + bodyScroll.scrollLeft;
+    return Math.max(0, Math.min(47, Math.floor(x / colWidth)));
+  }
+
+  function toRow(clientY, rect, rowHeight) {
+    const y = clientY - rect.top;
+    return Math.max(0, Math.min(6, Math.floor(y / rowHeight)));
+    }
+
+  function updateOverlay() {
+    if (!overlay) return;
+    const { rect, colWidth, rowHeight } = getMetrics();
+    const c1 = Math.min(startCol, curCol);
+    const c2 = Math.max(startCol, curCol) + 1;
+    overlay.style.left = `${c1 * colWidth}px`;
+    overlay.style.top = `${row * rowHeight}px`;
+    overlay.style.width = `${(c2 - c1) * colWidth}px`;
+    overlay.style.height = `${rowHeight}px`;
+  }
+
+  function cleanup() {
+    selecting = false;
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    overlay = null;
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
+
+  function onDown(e) {
+    if (e.button !== 0) return; // 左键
+    const { rect, colWidth, rowHeight } = getMetrics();
+    selecting = true;
+    startCol = curCol = toCol(e.clientX, rect, colWidth);
+    row = toRow(e.clientY, rect, rowHeight);
+    if (!grid.style.position) grid.style.position = 'relative';
+    overlay = document.createElement('div');
+    overlay.className = 'selection-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.pointerEvents = 'none';
+    grid.appendChild(overlay);
+    updateOverlay();
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    e.preventDefault();
+  }
+
+  function onMove(e) {
+    if (!selecting) return;
+    const { rect, colWidth } = getMetrics();
+    curCol = toCol(e.clientX, rect, colWidth);
+    updateOverlay();
+  }
+
+  function onUp(e) {
+    if (!selecting) return;
+    const { rect, colWidth } = getMetrics();
+    curCol = toCol(e.clientX, rect, colWidth);
+    const startIdx = Math.min(startCol, curCol);
+    const endIdx = Math.max(startCol, curCol) + 1;
+    cleanup();
+    if (typeof onSelectRange === 'function' && endIdx > startIdx) {
+      onSelectRange({ dayIndex: row, startIdx, endIdx, clientX: e.clientX, clientY: e.clientY });
+    }
+  }
+
+  grid.addEventListener('mousedown', onDown);
+}
+
 // 渲染 7 天 x 48 半小时列的网格骨架，并可选叠加事件块
 export function renderScheduleGrid(opts = {}) {
-  const { weekStartDate = getWeekStart(new Date()), events = [], dayDateLabels = true } = opts;
+  const { weekStartDate = getWeekStart(new Date()), events = [], dayDateLabels = true, onSelectRange } = opts;
   const container = el('div', { class: 'schedule-container' });
 
   // 头部：左侧占位 + 时间轴
@@ -99,6 +182,11 @@ export function renderScheduleGrid(opts = {}) {
   bodyScroll.addEventListener('scroll', () => {
     if (syncing) return; syncing = true; headerScroll.scrollLeft = bodyScroll.scrollLeft; syncing = false;
   });
+
+  // 框选（仅当提供回调时启用）
+  if (typeof onSelectRange === 'function') {
+    attachRangeSelection({ grid, bodyScroll, onSelectRange });
+  }
 
   return container;
 }
