@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>HTML 交互式排班演示</title>
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">排班演示</div>
+    <nav class="tabs" aria-label="视图切换">
+      <a class="tab" href="#manage" data-route="manage">排班管理</a>
+      <a class="tab" href="#mine" data-route="mine">我的排班</a>
+    </nav>
+  </header>
+
+  <main id="app" class="app-root" role="main">
+    <!-- 内容由 app.js 渲染 -->
+  </main>
+
+  <noscript>本演示需要启用 JavaScript。</noscript>
+
+  <script type="module" src="./assets/app.js"></script>
+</body>
+</html>

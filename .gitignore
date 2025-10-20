@@ -1,0 +1,18 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+logs/
+
+# Node (not used, but common)
+node_modules/
+.npmrc
+
+# Build outputs
+/dist/
+/build/
+/out/
+
+# Editor
+.vscode/
+.idea/
