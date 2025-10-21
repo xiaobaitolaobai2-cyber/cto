@@ -105,7 +105,7 @@ function renderManageView() {
 
   // 网格 + 叠加所有主播的本周排班
   const events = buildEventsForWeek(weekStart);
-  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events }));
+  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events, onShiftsChange: renderApp }));
   return section;
 }
 
@@ -136,7 +136,7 @@ function renderMineView() {
 
   // 仅叠加所选主播的当周排班（跨房间合并展示）
   const events = buildEventsForWeek(weekStart, { onlyAnchorId: selectedAnchorId });
-  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events }));
+  section.appendChild(renderScheduleGrid({ weekStartDate: weekStart, events, onShiftsChange: renderApp }));
   return section;
 }
 
